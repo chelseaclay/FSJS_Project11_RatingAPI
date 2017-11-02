@@ -13,7 +13,7 @@ var ReviewSchema = new mongoose.Schema({
   },
   rating: {
     type: Number,
-    required: true,
+    required: "Rating is required",
     min: 1,
     max: 5,
     trim: true

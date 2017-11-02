@@ -30,7 +30,7 @@ router.get('/:courseId', function(req, res, next) {
 
 // Creates a course, sets the Location header, and returns no content
 router.post('/', mid.userAutho, function(req, res, next) {
-  if (!req.body.title || !req.body.description || !req.body.estimatedTime || !req.body.materialsNeeded || !req.body.steps) {
+  if (!req.body.title || !req.body.description || !req.body.steps) {
     var err = new Error('All fields required.');
     err.status = 400;
     return next(err);
@@ -75,7 +75,9 @@ router.post('/:courseId/reviews', mid.userAutho, function(req, res, next) {
       error.status = 400;
       return next(error);
     } else {
-
+      var newReview = new Review(req.body);
+      courses.reviews.push(newReview);
+      console.log('Review was created under id: ' + courses.reviews[0]._id);
       // use schema's `create` method to insert document into Mongo
       Review.create(req.body, function (error, courses) {
         if (error) {
