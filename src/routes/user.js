@@ -23,16 +23,28 @@ router.post('/', function(req, res, next) {
     var newUser = {
       fullName: req.body.fullName,
       emailAddress: req.body.emailAddress,
-      password:req.body.password
+      password: req.body.password
     }
 
-    // use schema's `create` method to insert document into Mongo
-      User.create(newUser, function (error, user) {
+    // check to make sure user doesn't already exist
+    User.findOne({ emailAddress: newUser.emailAddress })
+      .exec(function (error, user) {
         if (error) {
           return next(error);
+        } else if ( user ) {
+          var err = new Error('User already exists.');
+          err.status = 401;
+          return next(err);
         } else {
-          res.location('/');
-          res.status(201).json();
+          // use schema's `create` method to insert document into Mongo
+          User.create(newUser, function (error, user) {
+            if (error) {
+              return next(error);
+            } else {
+              res.location('/');
+              res.status(201).json();
+            }
+          });
         }
       });
   }

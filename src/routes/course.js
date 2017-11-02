@@ -18,9 +18,9 @@ router.get('/', function(req, res, next) {
 // Returns all Course properties and related documents for the provided course ID
 // use Mongoose population to load the related user and reviews documents.
 router.get('/:courseId', function(req, res, next) {
-  Course.findById(req.params.courseId).populate('user reviews').exec(function(err, courses) {
-    if (err) {
-      return next(err);
+  Course.findById(req.params.courseId).populate('user reviews').exec(function(error, courses) {
+    if (error) {
+      return next(error);
     } else {
       res.send(courses);
       res.status(200);
@@ -29,7 +29,7 @@ router.get('/:courseId', function(req, res, next) {
 });
 
 // Creates a course, sets the Location header, and returns no content
-router.post('/', function(req, res, next) {
+router.post('/', mid.userAutho, function(req, res, next) {
   if (!req.body.title || !req.body.description || !req.body.estimatedTime || !req.body.materialsNeeded || !req.body.steps) {
     var err = new Error('All fields required.');
     err.status = 400;
@@ -58,7 +58,7 @@ router.post('/', function(req, res, next) {
 });
 
 // Updates a course and returns no content
-router.put('/:courseId', function(req, res, next) {
+router.put('/:courseId', mid.userAutho, function(req, res, next) {
   Course.findByIdAndUpdate(req.params.courseId, req.body, function(error){
     if(error){
       error.status = 400;
@@ -69,20 +69,15 @@ router.put('/:courseId', function(req, res, next) {
 });
 
 // Creates a review for the specified course ID, sets the Location header to the related course, and returns no content
-router.post('/:courseId/reviews', function(req, res, next) {
-  Course.findById(req.params.courseId).populate('user reviews').exec(function(err, courses) {
+router.post('/:courseId/reviews', mid.userAutho, function(req, res, next) {
+  Course.findById(req.params.courseId).populate('user reviews').exec(function(error, courses) {
     if (error) {
       error.status = 400;
       return next(error);
     } else {
-      var newReview = {
-        rating: req.body.rating,
-        review: req.body.review,
-        postedOn: Date.Now
-      }
 
       // use schema's `create` method to insert document into Mongo
-      Review.create(newReview, function (error, courses) {
+      Review.create(req.body, function (error, courses) {
         if (error) {
           return next(error);
         } else {
